@@ -1,4 +1,6 @@
 'use client'
+// Force git update
+
 
 import { submitMessage, deleteAllMessages, getMessages } from './actions'
 import { useState, useEffect } from 'react'

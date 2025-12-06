@@ -44,6 +44,7 @@ export default function Home() {
             className="w-full p-2 border rounded text-black"
           />
           <button 
+
             type="submit"
             className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
           >

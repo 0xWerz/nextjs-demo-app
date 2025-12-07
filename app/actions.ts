@@ -7,7 +7,7 @@ let messages: string[] = []
 
 export async function submitMessage(formData: FormData) {
   const message = formData.get('message') as string
-  const session = cookies().get('session')
+  const session = (await cookies()).get('session')
   
   // If user is logged in, tag message with their "User ID"
   const userTag = session ? `[User: ${session.value}]` : '[Anon]'
@@ -33,7 +33,7 @@ export async function getMessages() {
 
 export async function login() {
   // Set a "Secret" session cookie
-  cookies().set('session', 'admin_user_' + Math.random().toString(36).substring(7), {
+  (await cookies()).set('session', 'admin_user_' + Math.random().toString(36).substring(7), {
     httpOnly: true,
     secure: true,
     sameSite: 'lax',
@@ -43,12 +43,12 @@ export async function login() {
 }
 
 export async function logout() {
-  cookies().delete('session')
+  (await cookies()).delete('session')
   return { success: true }
 }
 
 export async function getSecretData() {
-  const session = cookies().get('session')
+  const session = (await cookies()).get('session')
   if (!session) {
     throw new Error('Unauthorized: You must be logged in to see secret data!')
   }

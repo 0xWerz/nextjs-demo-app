@@ -21,16 +21,39 @@ export async function submitMessage(formData: FormData) {
 }
 
 export async function deleteAllMessages() {
-  const count = messageLog.length
-  messageLog = []
-  console.log(`[SERVER ACTION] Deleted ${count} messages`)
-  
-  return { 
-    success: true, 
-    deletedCount: count 
-  }
+  messages = []
+  return { success: true }
 }
 
 export async function getMessages() {
-  return messageLog
+  return messages
+}
+
+// === AUTHENTICATION ACTIONS ===
+
+export async function login() {
+  // Set a "Secret" session cookie
+  cookies().set('session', 'admin_user_' + Math.random().toString(36).substring(7), {
+    httpOnly: true,
+    secure: true,
+    sameSite: 'lax',
+    path: '/',
+  })
+  return { success: true }
+}
+
+export async function logout() {
+  cookies().delete('session')
+  return { success: true }
+}
+
+export async function getSecretData() {
+  const session = cookies().get('session')
+  if (!session) {
+    throw new Error('Unauthorized: You must be logged in to see secret data!')
+  }
+  return { 
+    secret: "The Nuclear Launch Codes are: 1234-5678", 
+    user: session.value 
+  }
 }

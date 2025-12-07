@@ -1,3 +1,5 @@
+'use client'
+
 import { submitMessage, deleteAllMessages, getSecretData } from '../actions'
 import { useState, useEffect } from 'react'
 
@@ -42,45 +44,62 @@ export default function OtherPage() {
   }
 
   return (
+    <div className="p-8 max-w-2xl mx-auto space-y-8">
+      <div>
+        <h1 className="text-3xl font-bold mb-2">Edge Runtime Page (/other)</h1>
+        <p className="text-gray-600">This page runs on Edge and forwards actions to Node.</p>
+      </div>
+
+      <div className={`p-4 border rounded ${user ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200'}`}>
+        <h2 className="text-xl font-bold mb-2">👤 User Session</h2>
+        {user ? (
+          <div>
+            <p className="text-green-700 font-mono">Logged In as: {user}</p>
+            <p className="text-xs text-green-600 mt-1">Secret: {secret}</p>
+          </div>
+        ) : (
+          <p className="text-red-700">Not Logged In. <a href="/login" className="underline font-bold">Go to /login</a></p>
+        )}
+      </div>
+
+      <section className="p-4 border rounded">
+        <h2 className="text-xl font-semibold mb-4">Submit Message (Server Action)</h2>
+        <form action={handleSubmit} className="space-y-4">
           <input 
             type="text" 
-            id="message" 
             name="message" 
-            defaultValue="Test from /other page"
-            style={{ width: '100%', padding: '0.5rem', marginTop: '0.5rem' }}
+            placeholder="Enter message..."
+            className="w-full p-2 border rounded text-black"
           />
-        </div>
+          <button 
+            type="submit"
+            className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+            disabled={loading}
+          >
+            {loading ? 'Sending...' : 'Submit Message'}
+          </button>
+        </form>
+      </section>
+
+      <section className="p-4 border rounded">
+        <h2 className="text-xl font-semibold mb-4">Delete All Messages</h2>
         <button 
-          type="submit" 
+          onClick={handleDelete}
+          className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600"
           disabled={loading}
-          style={{ padding: '0.5rem 1rem', marginRight: '1rem' }}
         >
-          {loading ? 'Loading...' : 'Submit Message'}
+          {loading ? 'Deleting...' : 'Delete All Messages'}
         </button>
-      </form>
-      
-      <button 
-        onClick={handleDelete}
-        disabled={loading}
-        style={{ padding: '0.5rem 1rem', marginTop: '1rem', backgroundColor: '#ff4444', color: 'white', border: 'none' }}
-      >
-        Delete All Messages
-      </button>
-      
-      {result && (
-        <pre style={{ 
-          marginTop: '2rem', 
-          padding: '1rem', 
-          backgroundColor: '#f5f5f5', 
-          borderRadius: '4px',
-          overflow: 'auto'
-        }}>
-          {result}
+      </section>
+
+      <section className="p-4 border rounded bg-gray-100">
+        <h2 className="text-xl font-semibold mb-4 text-black">Last Result:</h2>
+        <pre className="bg-white p-2 rounded text-sm overflow-auto text-black">
+          {result || 'No action executed yet'}
         </pre>
-      )}
+      </section>
       
-      <hr style={{ margin: '2rem 0' }} />
-      <p><a href="/">← Back to Home</a></p>
+      <p><a href="/" className="text-blue-600 hover:underline">← Back to Home</a></p>
     </div>
   )
 }

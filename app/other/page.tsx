@@ -3,6 +3,8 @@
 import { submitMessage, deleteAllMessages } from '../actions'
 import { useState } from 'react'
 
+export const runtime = 'edge'
+
 export default function OtherPage() {
   const [result, setResult] = useState<string>('')
   const [loading, setLoading] = useState(false)

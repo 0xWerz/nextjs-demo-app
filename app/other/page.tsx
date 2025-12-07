@@ -1,13 +1,23 @@
-'use client'
-
-import { submitMessage, deleteAllMessages } from '../actions'
-import { useState } from 'react'
+import { submitMessage, deleteAllMessages, getSecretData } from '../actions'
+import { useState, useEffect } from 'react'
 
 export const runtime = 'edge'
 
 export default function OtherPage() {
   const [result, setResult] = useState<string>('')
   const [loading, setLoading] = useState(false)
+  const [user, setUser] = useState<string | null>(null)
+  const [secret, setSecret] = useState<string | null>(null)
+
+  useEffect(() => {
+    // Check if we are logged in by trying to fetch secret data
+    getSecretData()
+      .then(data => {
+        setUser(data.user)
+        setSecret(data.secret)
+      })
+      .catch(() => setUser(null))
+  }, [])
 
   async function handleSubmit(formData: FormData) {
     setLoading(true)
@@ -32,16 +42,6 @@ export default function OtherPage() {
   }
 
   return (
-    <div style={{ padding: '2rem', maxWidth: '600px', margin: '0 auto' }}>
-      <h1>Other Page - Action Test</h1>
-      <p>This page calls the same actions from a different route context.</p>
-      <p>This is used to test action forwarding behavior.</p>
-      
-      <hr style={{ margin: '2rem 0' }} />
-      
-      <form action={handleSubmit}>
-        <div style={{ marginBottom: '1rem' }}>
-          <label htmlFor="message">Message:</label>
           <input 
             type="text" 
             id="message" 

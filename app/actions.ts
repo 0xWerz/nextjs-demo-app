@@ -1,25 +1,26 @@
 'use server'
 
-// Simulated sensitive action - in real app this would modify data
-let messageLog: string[] = []
+import { cookies } from 'next/headers'
+
+// Simulating a database
+let messages: string[] = []
 
 export async function submitMessage(formData: FormData) {
   const message = formData.get('message') as string
-  const timestamp = new Date().toISOString()
+  const session = cookies().get('session')
   
-  // Log the action execution - this is the "vulnerable" action
-  messageLog.push(`[${timestamp}] Message: ${message}`)
-  console.log(`[SERVER ACTION] Executed with message: ${message}`)
+  // If user is logged in, tag message with their "User ID"
+  const userTag = session ? `[User: ${session.value}]` : '[Anon]'
   
-  return { 
-    success: true, 
-    message: `Action executed! Message received: ${message}`,
-    timestamp 
+  if (message) {
+    console.log(`[SERVER ACTION] Executed with message: ${message}`)
+    messages.push(`${userTag} ${message}`)
+    return { success: true, message: `Received: ${message}` }
   }
+  return { success: false }
 }
 
 export async function deleteAllMessages() {
-  // Sensitive action - deletes all data
   const count = messageLog.length
   messageLog = []
   console.log(`[SERVER ACTION] Deleted ${count} messages`)

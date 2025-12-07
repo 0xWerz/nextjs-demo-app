@@ -2,12 +2,23 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   images: {
-    // Allow httpbin.org for SSRF testing
-    // httpbin.org/redirect-to?url=X follows redirects to arbitrary URLs
+    // Allow domains for SSRF testing
     remotePatterns: [
       {
         protocol: 'https',
         hostname: 'httpbin.org',
+        pathname: '/**',
+      },
+      {
+        // DNS rebinding test - user's domain
+        protocol: 'http',
+        hostname: 'qyst.werz.xyz',
+        pathname: '/**',
+      },
+      {
+        // Also allow any subdomain of werz.xyz
+        protocol: 'http',
+        hostname: '*.werz.xyz',
         pathname: '/**',
       },
     ],

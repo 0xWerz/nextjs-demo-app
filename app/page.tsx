@@ -4,6 +4,7 @@
 
 import { submitMessage, deleteAllMessages, getMessages } from './actions'
 import { useState, useEffect } from 'react'
+import Link from 'next/link'
 
 export default function Home() {
   const [result, setResult] = useState<string>('')
@@ -33,6 +34,17 @@ export default function Home() {
   return (
     <div className="p-8 max-w-2xl mx-auto">
       <h1 className="text-3xl font-bold mb-6">CSRF Vulnerability Test App</h1>
+      
+      {/* INTERCEPTION TEST LINK */}
+      <section className="mb-8 p-4 border rounded bg-blue-50">
+        <h2 className="text-xl font-semibold mb-4 text-black">Interception Route Test</h2>
+        <Link 
+          href="/photos" 
+          className="px-6 py-3 bg-green-500 text-white rounded hover:bg-green-600 inline-block"
+        >
+          📷 View Photos (Click to test interception)
+        </Link>
+      </section>
       
       <section className="mb-8 p-4 border rounded">
         <h2 className="text-xl font-semibold mb-4">Submit Message (Server Action)</h2>

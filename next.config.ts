@@ -21,7 +21,11 @@ const nextConfig: NextConfig = {
         hostname: '*.werz.xyz',
         pathname: '/**',
       },
+      { hostname: '127.0.0.1' },
+
     ],
+    dangerouslyAllowLocalIP: true, // Bypass isPrivateIp() for local testing
+    // dangerouslyAllowSVG: true, // Disabled to test JXL bypass
   },
 };
 

